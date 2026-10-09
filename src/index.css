@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { @apply bg-paper text-ink antialiased; }
+@media (prefers-color-scheme: dark) { html { @apply bg-paper-dark text-ink-dark; } }
+:focus-visible { outline: 2px solid #0F766E; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
