@@ -6,7 +6,7 @@ import { dayOfWeek, groupByDate, monthGrid, shiftMonth, weekDays } from "../util
 import { QuickAdd } from "../components/QuickAdd";
 import { TaskRow } from "../components/TaskRow";
 import type { Task } from "../types";
-import { btnGhost, btnOutline, errText, field, lbl, muted, pageTitle, segActive } from "../ui";
+import { btnGhost, btnOutline, errText, muted, pageTitle, segActive } from "../ui";
 
 type View = "day" | "week" | "month";
 const DOW = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
