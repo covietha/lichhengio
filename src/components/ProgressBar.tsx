@@ -3,15 +3,19 @@ import { muted } from "../ui";
 
 export function ProgressBar({ progress, label }: { progress: Progress; label: string }) {
   if (progress.percent === null) return <p className={`text-sm ${muted}`}>Chưa có việc để tính tiến độ</p>;
+  const complete = progress.percent === 100;
   return (
     <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className={`text-sm ${muted}`}>{progress.done}/{progress.total} việc xong</p>
+        <p className="font-display text-lg font-bold tabular-nums">{progress.percent}%</p>
+      </div>
       <div
         role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percent}
-        className="h-2 w-full overflow-hidden rounded-full bg-ink/10 dark:bg-ink-dark/15"
+        className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-line"
       >
-        <div className="h-full bg-brand dark:bg-brand-dark" style={{ width: `${progress.percent}%` }} />
+        <div className={`h-full rounded-full ${complete ? "bg-ok" : "bg-pen"}`} style={{ width: `${progress.percent}%` }} />
       </div>
-      <p className={`mt-1 text-xs ${muted}`}>{progress.done}/{progress.total} việc xong · {progress.percent}%</p>
     </div>
   );
 }

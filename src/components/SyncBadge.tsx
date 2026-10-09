@@ -15,9 +15,12 @@ export function SyncBadge() {
   }, []);
 
   return (
-    <p className="text-sm text-ink/70 dark:text-ink-dark/70" role="status">
-      {online ? "Đang online" : "Đang offline"} · Lưu trên máy này, chưa cấu hình đồng bộ đám mây
-      {pending > 0 ? ` · ${pending} thay đổi đang chờ` : ""}
+    <p className="flex items-start gap-2 text-sm text-muted" role="status">
+      <span aria-hidden className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${online ? "bg-ok" : "bg-amber"}`} />
+      <span>
+        {online ? "Đang online" : "Đang offline"}. Lưu trên máy này, chưa cấu hình đồng bộ đám mây
+        {pending > 0 ? `. ${pending} thay đổi đang chờ` : ""}
+      </span>
     </p>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Plus } from "lucide-react";
+import { ArrowLeft, CalendarDays, Plus } from "lucide-react";
 import { useData } from "../hooks/useData";
 import { projectService } from "../services/instance";
 import { progressOf, tasksOfProject } from "../services/progress";
@@ -7,7 +7,7 @@ import type { Project, ProjectStatus, TaskPriority } from "../types";
 import { ProgressBar } from "../components/ProgressBar";
 import { QuickAdd } from "../components/QuickAdd";
 import { TaskRow } from "../components/TaskRow";
-import { btnGhost, btnPrimary, errMsg, errText, field, fmtDate, muted, PRIORITY_VI, PROJECT_STATUS_VI } from "../ui";
+import { btnDanger, btnGhost, btnOutline, btnPrimary, errMsg, errText, field, fmtDate, lbl, muted, pageTitle, PRIORITY_VI, PROJECT_BAND, PROJECT_STATUS_VI } from "../ui";
 
 function ProjectForm({ project, onDone }: { project?: Project; onDone: (p?: Project) => void }) {
   const [name, setName] = useState(project?.name ?? "");
@@ -38,30 +38,30 @@ function ProjectForm({ project, onDone }: { project?: Project; onDone: (p?: Proj
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-2 sm:grid-cols-2" aria-label={project ? "Sửa dự án" : "Thêm dự án"}>
-      <label className="flex flex-col text-sm sm:col-span-2">Tên dự án
-        <input className={field + " mt-1"} value={name} onChange={(e) => setName(e.target.value)} />
+    <form onSubmit={submit} className="panel grid gap-3 sm:grid-cols-2" aria-label={project ? "Sửa dự án" : "Thêm dự án"}>
+      <label className={`${lbl} sm:col-span-2`}>Tên dự án
+        <input className={field} value={name} onChange={(e) => setName(e.target.value)} />
       </label>
-      <label className="flex flex-col text-sm sm:col-span-2">Mô tả
-        <textarea className={field + " mt-1"} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+      <label className={`${lbl} sm:col-span-2`}>Mô tả
+        <textarea className={field} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
       </label>
-      <label className="flex flex-col text-sm">Trạng thái
-        <select className={field + " mt-1"} value={status} onChange={(e) => setStatus(e.target.value as ProjectStatus)}>
+      <label className={lbl}>Trạng thái
+        <select className={field} value={status} onChange={(e) => setStatus(e.target.value as ProjectStatus)}>
           {(Object.keys(PROJECT_STATUS_VI) as ProjectStatus[]).map((k) => <option key={k} value={k}>{PROJECT_STATUS_VI[k]}</option>)}
         </select>
       </label>
-      <label className="flex flex-col text-sm">Ưu tiên
-        <select className={field + " mt-1"} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
+      <label className={lbl}>Ưu tiên
+        <select className={field} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
           {(Object.keys(PRIORITY_VI) as TaskPriority[]).map((k) => <option key={k} value={k}>{PRIORITY_VI[k]}</option>)}
         </select>
       </label>
-      <label className="flex flex-col text-sm">Ngày bắt đầu
-        <input type="date" className={field + " mt-1"} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+      <label className={lbl}>Ngày bắt đầu
+        <input type="date" className={field} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
       </label>
-      <label className="flex flex-col text-sm">Hạn hoàn thành
-        <input type="date" className={field + " mt-1"} value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
+      <label className={lbl}>Hạn hoàn thành
+        <input type="date" className={field} value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
       </label>
-      <div className="flex gap-2 sm:col-span-2">
+      <div className="flex flex-wrap gap-2 sm:col-span-2">
         <button disabled={saving} className={btnPrimary}>{saving ? "Đang lưu..." : project ? "Lưu thay đổi" : "Tạo dự án"}</button>
         <button type="button" className={btnGhost} onClick={() => onDone()}>Hủy</button>
       </div>
@@ -83,25 +83,27 @@ export function ProjectsPage() {
     const archived = selected.status === "ARCHIVED";
     return (
       <div>
-        <button className={btnGhost} onClick={() => { setSel(null); setMode("view"); }}>← Tất cả dự án</button>
+        <button className={`${btnGhost} -ml-3`} onClick={() => { setSel(null); setMode("view"); }}><ArrowLeft size={18} aria-hidden /> Tất cả dự án</button>
         {mode === "edit" ? (
           <div className="mt-3"><ProjectForm project={selected} onDone={() => setMode("view")} /></div>
         ) : (
           <>
-            <h1 className="mt-3 text-2xl font-semibold">{selected.name}</h1>
-            <p className={`mt-1 text-sm ${muted}`}>
-              {PROJECT_STATUS_VI[selected.status]} · Ưu tiên {PRIORITY_VI[selected.priority].toLowerCase()}
-              {selected.startDate ? ` · từ ${fmtDate(selected.startDate)}` : ""}{selected.targetDate ? ` · hạn ${fmtDate(selected.targetDate)}` : ""}
+            <h1 className={`mt-4 ${pageTitle}`}>{selected.name}</h1>
+            <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
+              <span className="rounded-md bg-pen-soft px-2 py-0.5 font-medium text-pen">{PROJECT_STATUS_VI[selected.status]}</span>
+              <span>Ưu tiên {PRIORITY_VI[selected.priority].toLowerCase()}</span>
+              {selected.startDate && <span className="inline-flex items-center gap-1"><CalendarDays size={14} aria-hidden /> Từ {fmtDate(selected.startDate)}</span>}
+              {selected.targetDate && <span className="inline-flex items-center gap-1"><CalendarDays size={14} aria-hidden /> Hạn {fmtDate(selected.targetDate)}</span>}
             </p>
             {selected.description && <p className="mt-2 whitespace-pre-line">{selected.description}</p>}
-            <div className="mt-3 max-w-md"><ProgressBar progress={progressOf(pt)} label={`Tiến độ dự án ${selected.name}`} /></div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button className={btnGhost} onClick={() => setMode("edit")}>Sửa dự án</button>
-              <button className={btnGhost} onClick={() => projectService.update(selected.id, { status: archived ? "ACTIVE" : "ARCHIVED" }).catch(() => setError("Không đổi được trạng thái."))}>
+            <div className="panel mt-4 max-w-md"><ProgressBar progress={progressOf(pt)} label={`Tiến độ dự án ${selected.name}`} /></div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button className={btnOutline} onClick={() => setMode("edit")}>Sửa dự án</button>
+              <button className={btnOutline} onClick={() => projectService.update(selected.id, { status: archived ? "ACTIVE" : "ARCHIVED" }).catch(() => setError("Không đổi được trạng thái."))}>
                 {archived ? "Bỏ lưu trữ" : "Lưu trữ"}
               </button>
               <button
-                className={btnGhost}
+                className={btnDanger}
                 onClick={() => {
                   if (confirm(`Xóa dự án "${selected.name}"? Các việc trong dự án vẫn được giữ lại, chỉ không còn thuộc dự án nào.`)) {
                     projectService.remove(selected.id).then(() => setSel(null)).catch(() => setError("Không xóa được dự án."));
@@ -112,10 +114,10 @@ export function ProjectsPage() {
           </>
         )}
         {error && <p role="alert" className={`mt-3 ${errText}`}>{error}</p>}
-        <h2 className="mt-8 text-lg font-semibold">Việc trong dự án ({pt.length})</h2>
+        <h2 className="mt-10 text-xl font-bold tracking-tight">Việc trong dự án ({pt.length})</h2>
         <div className="mt-3"><QuickAdd projectId={selected.id} /></div>
         {pt.length === 0 ? <p className={`mt-3 ${muted}`}>Dự án chưa có việc nào. Thêm việc ở phía trên.</p>
-          : <ul className="mt-2">{pt.map((t) => <TaskRow key={t.id} task={t} showDate onError={setError} />)}</ul>}
+          : <ul className="mt-3 rounded-xl border border-line bg-surface">{pt.map((t) => <TaskRow key={t.id} task={t} showDate onError={setError} />)}</ul>}
       </div>
     );
   }
@@ -123,24 +125,28 @@ export function ProjectsPage() {
   const list = projects.filter((p) => showArchived || p.status !== "ARCHIVED");
   return (
     <div>
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Dự án</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className={pageTitle}>Dự án</h1>
         <button className={btnPrimary} onClick={() => setMode("create")}><Plus size={16} aria-hidden /> Thêm dự án</button>
       </div>
       {mode === "create" && <div className="mt-4"><ProjectForm onDone={(p) => { setMode("view"); if (p) setSel(p.id); }} /></div>}
-      <label className="mt-4 flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} /> Hiện dự án đã lưu trữ
+      <label className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm">
+        <input type="checkbox" className="h-4 w-4 accent-pen" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} /> Hiện dự án đã lưu trữ
       </label>
       {!ready ? <p className="mt-6">Đang tải dữ liệu từ máy...</p>
-        : list.length === 0 ? <p className={`mt-6 ${muted}`}>Chưa có dự án nào. Bấm "Thêm dự án" để bắt đầu.</p>
-        : <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+        : list.length === 0 ? <p className={`mt-8 ${muted}`}>Chưa có dự án nào. Bấm "Thêm dự án" để bắt đầu.</p>
+        : <ul className="mt-4 grid gap-4 sm:grid-cols-2">
             {list.map((p) => (
-              <li key={p.id} className="rounded-lg border border-ink/15 p-3 dark:border-ink-dark/20">
-                <button className="w-full text-left" onClick={() => setSel(p.id)}>
-                  <span className="font-medium">{p.name}</span>
-                  <span className={`block text-xs ${muted}`}>{PROJECT_STATUS_VI[p.status]}{p.targetDate ? ` · hạn ${fmtDate(p.targetDate)}` : ""}</span>
+              <li key={p.id} className="relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface">
+                <span aria-hidden className={`h-1.5 ${PROJECT_BAND[p.status]}`} />
+                <button className="w-full px-4 pb-1 pt-3 text-left" onClick={() => setSel(p.id)}>
+                  <span className="block font-display text-lg font-bold leading-snug tracking-tight">{p.name}</span>
+                  <span className={`mt-1 flex flex-wrap items-center gap-x-3 text-xs ${muted}`}>
+                    <span>{PROJECT_STATUS_VI[p.status]}</span>
+                    {p.targetDate && <span className="inline-flex items-center gap-1"><CalendarDays size={12} aria-hidden /> Hạn {fmtDate(p.targetDate)}</span>}
+                  </span>
                 </button>
-                <div className="mt-2"><ProgressBar progress={progressOf(tasksOfProject(tasks, p.id))} label={`Tiến độ dự án ${p.name}`} /></div>
+                <div className="mt-auto px-4 pb-4 pt-3"><ProgressBar progress={progressOf(tasksOfProject(tasks, p.id))} label={`Tiến độ dự án ${p.name}`} /></div>
               </li>
             ))}
           </ul>}

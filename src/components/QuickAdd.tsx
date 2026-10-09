@@ -1,10 +1,10 @@
 import { useRef, useState, type FormEvent } from "react";
-import { Plus } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { taskService } from "../services/instance";
 import type { TaskPriority } from "../types";
 import { todayStr } from "../utils/date";
 import { useData } from "../hooks/useData";
-import { btnPrimary, errMsg, errText, field, PRIORITY_VI } from "../ui";
+import { btnPrimary, errMsg, errText, field, fmtDate, lbl, PRIORITY_VI } from "../ui";
 
 interface Props { defaultDate?: string; defaultTime?: string; projectId?: string; goalId?: string }
 
@@ -19,6 +19,7 @@ export function QuickAdd({ defaultDate, defaultTime, projectId, goalId }: Props)
   const [gid, setGid] = useState(goalId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [more, setMore] = useState(Boolean(defaultTime));
   const lock = useRef(false); // chặn gửi hai lần liên tiếp
 
   async function submit(e: FormEvent) {
@@ -44,39 +45,53 @@ export function QuickAdd({ defaultDate, defaultTime, projectId, goalId }: Props)
   const openGoals = goals.filter((g) => g.status !== "ARCHIVED" || g.id === goalId);
 
   return (
-    <form onSubmit={submit} className="flex flex-wrap items-end gap-2" aria-label="Thêm việc">
-      <label className="flex min-w-[14rem] flex-1 flex-col text-sm">Việc cần làm
-        <input className={field + " mt-1"} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ví dụ: Chấm bài kiểm tra 12A3" />
-      </label>
-      <label className="flex flex-col text-sm">Hạn
-        <input type="date" className={field + " mt-1"} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-      </label>
-      <label className="flex flex-col text-sm">Giờ
-        <input type="time" className={field + " mt-1"} value={dueTime} onChange={(e) => setDueTime(e.target.value)} />
-      </label>
-      <label className="flex flex-col text-sm">Ưu tiên
-        <select className={field + " mt-1"} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
-          {(Object.keys(PRIORITY_VI) as TaskPriority[]).map((k) => <option key={k} value={k}>{PRIORITY_VI[k]}</option>)}
-        </select>
-      </label>
-      {!projectId && openProjects.length > 0 && (
-        <label className="flex flex-col text-sm">Dự án
-          <select className={field + " mt-1"} value={pid} onChange={(e) => setPid(e.target.value)}>
-            <option value="">Không có</option>
-            {openProjects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+    <form onSubmit={submit} className="panel" aria-label="Thêm việc">
+      <div className="flex flex-wrap gap-2">
+        <label className="min-w-[14rem] flex-1">
+          <span className="sr-only">Việc cần làm</span>
+          <input className={field} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Việc cần làm, ví dụ: Chấm bài kiểm tra 12A3" />
         </label>
+        <button disabled={saving} className={`${btnPrimary} w-full sm:w-auto`}><Plus size={18} aria-hidden /> {saving ? "Đang lưu..." : "Thêm việc"}</button>
+      </div>
+      <button
+        type="button" aria-expanded={more} onClick={() => setMore((v) => !v)}
+        className="mt-3 inline-flex min-h-9 items-center gap-1 text-sm font-medium text-pen hover:underline"
+      >
+        <ChevronDown size={16} aria-hidden className={`transition-transform ${more ? "rotate-180" : ""}`} />
+        Hạn {dueDate ? fmtDate(dueDate) : "chưa đặt"}{dueTime ? ` lúc ${dueTime}` : ""}, ưu tiên, dự án
+      </button>
+      {more && (
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <label className={lbl}>Hạn
+            <input type="date" className={field} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+          </label>
+          <label className={lbl}>Giờ
+            <input type="time" className={field} value={dueTime} onChange={(e) => setDueTime(e.target.value)} />
+          </label>
+          <label className={lbl}>Ưu tiên
+            <select className={field} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
+              {(Object.keys(PRIORITY_VI) as TaskPriority[]).map((k) => <option key={k} value={k}>{PRIORITY_VI[k]}</option>)}
+            </select>
+          </label>
+          {!projectId && openProjects.length > 0 && (
+            <label className={lbl}>Dự án
+              <select className={field} value={pid} onChange={(e) => setPid(e.target.value)}>
+                <option value="">Không có</option>
+                {openProjects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </label>
+          )}
+          {!goalId && openGoals.length > 0 && (
+            <label className={lbl}>Mục tiêu
+              <select className={field} value={gid} onChange={(e) => setGid(e.target.value)}>
+                <option value="">Không có</option>
+                {openGoals.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
       )}
-      {!goalId && openGoals.length > 0 && (
-        <label className="flex flex-col text-sm">Mục tiêu
-          <select className={field + " mt-1"} value={gid} onChange={(e) => setGid(e.target.value)}>
-            <option value="">Không có</option>
-            {openGoals.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
-          </select>
-        </label>
-      )}
-      <button disabled={saving} className={btnPrimary}><Plus size={16} aria-hidden /> {saving ? "Đang lưu..." : "Thêm việc"}</button>
-      {error && <p role="alert" className={`w-full ${errText}`}>{error}</p>}
+      {error && <p role="alert" className={`mt-3 ${errText}`}>{error}</p>}
     </form>
   );
 }

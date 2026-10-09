@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { taskService } from "../services/instance";
 import type { Task, TaskPriority } from "../types";
 import { useData } from "../hooks/useData";
-import { btnGhost, btnPrimary, errMsg, errText, field, PRIORITY_VI } from "../ui";
+import { btnGhost, btnPrimary, errMsg, errText, field, lbl, PRIORITY_VI } from "../ui";
 
 export function TaskEditForm({ task, onDone }: { task: Task; onDone: () => void }) {
   const { projects, goals } = useData();
@@ -34,32 +34,32 @@ export function TaskEditForm({ task, onDone }: { task: Task; onDone: () => void 
   }
 
   return (
-    <form onSubmit={submit} className="grid w-full gap-2 sm:grid-cols-2" aria-label={`Sửa việc: ${task.title}`}>
-      <label className="flex flex-col text-sm sm:col-span-2">Tên việc
-        <input className={field + " mt-1"} value={title} onChange={(e) => setTitle(e.target.value)} />
+    <form onSubmit={submit} className="grid w-full gap-3 sm:grid-cols-2" aria-label={`Sửa việc: ${task.title}`}>
+      <label className={`${lbl} sm:col-span-2`}>Tên việc
+        <input className={field} value={title} onChange={(e) => setTitle(e.target.value)} />
       </label>
-      <label className="flex flex-col text-sm">Hạn
-        <input type="date" className={field + " mt-1"} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+      <label className={lbl}>Hạn
+        <input type="date" className={field} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
       </label>
-      <label className="flex flex-col text-sm">Giờ
-        <input type="time" className={field + " mt-1"} value={dueTime} onChange={(e) => setDueTime(e.target.value)} />
+      <label className={lbl}>Giờ
+        <input type="time" className={field} value={dueTime} onChange={(e) => setDueTime(e.target.value)} />
       </label>
-      <label className="flex flex-col text-sm">Ưu tiên
-        <select className={field + " mt-1"} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
+      <label className={lbl}>Ưu tiên
+        <select className={field} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
           {(Object.keys(PRIORITY_VI) as TaskPriority[]).map((k) => <option key={k} value={k}>{PRIORITY_VI[k]}</option>)}
         </select>
       </label>
-      <label className="flex flex-col text-sm">Thời lượng dự kiến (phút)
-        <input type="number" min={0} max={1440} className={field + " mt-1"} value={est} onChange={(e) => setEst(e.target.value)} />
+      <label className={lbl}>Thời lượng dự kiến (phút)
+        <input type="number" min={0} max={1440} className={field} value={est} onChange={(e) => setEst(e.target.value)} />
       </label>
-      <label className="flex flex-col text-sm">Dự án
-        <select className={field + " mt-1"} value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+      <label className={lbl}>Dự án
+        <select className={field} value={projectId} onChange={(e) => setProjectId(e.target.value)}>
           <option value="">Không có</option>
           {projects.filter((p) => p.status !== "ARCHIVED" || p.id === task.projectId).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       </label>
-      <label className="flex flex-col text-sm">Mục tiêu
-        <select className={field + " mt-1"} value={goalId} onChange={(e) => setGoalId(e.target.value)}>
+      <label className={lbl}>Mục tiêu
+        <select className={field} value={goalId} onChange={(e) => setGoalId(e.target.value)}>
           <option value="">Không có</option>
           {goals.filter((g) => g.status !== "ARCHIVED" || g.id === task.goalId).map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
         </select>

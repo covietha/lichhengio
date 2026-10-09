@@ -2,7 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-html { @apply bg-paper text-ink antialiased; }
-@media (prefers-color-scheme: dark) { html { @apply bg-paper-dark text-ink-dark; } }
-:focus-visible { outline: 2px solid #0F766E; outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/*
+  Bảng màu "vở học sinh": giấy trắng xanh, mực xanh để viết, mực đỏ chỉ dành cho lề vở,
+  việc quá hạn và cảnh báo. Giá trị là kênh RGB để Tailwind ghép được độ trong suốt.
+*/
+:root {
+  --paper: 247 249 253;
+  --surface: 255 255 255;
+  --ink: 23 32 58;
+  --muted: 91 100 128;
+  --line: 221 227 240;
+  --pen: 35 64 200;
+  --pen-soft: 232 236 252;
+  --on-pen: 255 255 255;
+  --margin: 200 48 43;
+  --margin-soft: 252 234 233;
+  --amber: 138 84 0;
+  --amber-soft: 255 243 220;
+  --ok: 27 122 75;
+  --ok-soft: 224 245 234;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: 14 19 34;
+    --surface: 21 27 46;
+    --ink: 230 234 247;
+    --muted: 154 164 196;
+    --line: 38 46 72;
+    --pen: 142 162 255;
+    --pen-soft: 28 37 71;
+    --on-pen: 14 19 34;
+    --margin: 255 123 114;
+    --margin-soft: 58 28 34;
+    --amber: 242 179 94;
+    --amber-soft: 52 40 20;
+    --ok: 95 211 154;
+    --ok-soft: 20 48 38;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  html { @apply bg-paper font-sans text-ink antialiased; }
+  h1, h2, h3 { @apply font-display; }
+  :focus-visible { outline: 2px solid rgb(var(--pen)); outline-offset: 2px; border-radius: 4px; }
+  button { @apply cursor-pointer disabled:cursor-not-allowed; }
+  select, input, textarea { @apply text-ink; }
+}
+
+@layer components {
+  /* Dòng kẻ ngang của vở, kèm lề đỏ ở bên trái ô tick. */
+  .ruled-row { @apply relative border-b border-line; }
+  .ruled-row::before {
+    content: ""; @apply pointer-events-none absolute inset-y-0 w-px bg-margin/45;
+    left: 3.25rem;
+  }
+  .ruled-row:last-child { @apply border-b-0; }
+  .panel { @apply rounded-xl border border-line bg-surface p-4; }
+  .check-pop { animation: check-pop 180ms ease-out; }
+}
+
+@keyframes check-pop {
+  0% { transform: scale(0.7); }
+  70% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
