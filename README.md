@@ -19,15 +19,28 @@ Trên điện thoại: chạy `npm run dev -- --host`, mở địa chỉ mạng 
 - **Lịch:** xem Ngày / Tuần / Tháng từ dữ liệu thật; ở xem Ngày bấm giờ để thêm việc đúng giờ đó.
 - **Responsive:** thanh điều hướng dưới trên điện thoại, thanh bên trên máy tính; hỗ trợ chế độ tối theo hệ thống.
 - **Lưu trữ:** IndexedDB (Dexie). Mỗi thay đổi ghi kèm một dòng trong `outbox` trong cùng transaction.
+- **Đồng bộ lên hệ thống (Vercel + Redis):** đăng nhập bằng mật khẩu, dữ liệu tự đồng bộ giữa các máy. Xem mục bên dưới.
+- **Địa chỉ riêng cho từng trang:** `/`, `/cong-viec`, `/lich`, `/du-an`, `/muc-tieu`; nút Back của trình duyệt hoạt động, tiêu đề tab đổi theo trang.
 
 ## Quy ước dữ liệu
 - Gửi `""` cho trường tùy chọn khi sửa nghĩa là xóa trường đó (bỏ hạn, bỏ liên kết...).
 - Xóa dự án/mục tiêu là xóa mềm. Việc bên trong KHÔNG bị xóa, chỉ hiển thị là không thuộc dự án nào.
 - Tiến độ = việc hoàn thành / (tất cả việc trừ việc đã hủy). Chưa có việc thì hiện "Chưa có việc", không bịa 0%.
 
+## Lưu dữ liệu trên hệ thống (Vercel)
+Ứng dụng vẫn ghi vào máy trước (chạy được khi offline), rồi tự đồng bộ lên kho Redis trên Vercel.
+Máy nào đăng nhập cũng thấy cùng dữ liệu. Khi hai máy sửa cùng một mục, bản sửa sau cùng thắng (theo giờ của máy).
+
+Cài đặt một lần trên Vercel:
+1. Mở project trên Vercel, vào **Storage**, chọn **Create Database** hoặc **Marketplace**, chọn **Upstash Redis** (gói miễn phí), rồi **Connect to Project**. Vercel tự thêm `KV_REST_API_URL` và `KV_REST_API_TOKEN`.
+2. Vào **Settings, Environment Variables**, thêm `APP_PASSWORD` (mật khẩu bạn muốn dùng) và `SESSION_SECRET` (chuỗi ngẫu nhiên từ 32 ký tự trở lên).
+3. Vào **Deployments**, chọn bản mới nhất, bấm **Redeploy**.
+
+Khi chưa cấu hình các biến trên (hoặc chạy `npm run dev`), ứng dụng chạy ở chế độ chỉ lưu trên máy, như trước.
+Đăng xuất sẽ đồng bộ lần cuối rồi xóa dữ liệu khỏi máy đó (dữ liệu vẫn nằm trên hệ thống).
+
 ## Chưa có (cố ý, không giả lập)
-- Đăng nhập, đồng bộ đám mây, Firebase: chưa có Firebase project. Dữ liệu chỉ nằm trên trình duyệt này.
-  Xóa dữ liệu trình duyệt hoặc dùng cửa sổ ẩn danh sẽ mất dữ liệu. Chưa có Export/Import (Phase 5).
+- Nhiều tài khoản: hiện chỉ một chủ sở hữu, một mật khẩu. Chưa có Export/Import (Phase 5).
 - Nhắc việc, thông báo, AI, PWA cài đặt được, thống kê.
 - Sự kiện lịch riêng và Google Calendar: lịch chỉ hiển thị việc có hạn.
 - Việc lặp lại, việc con, ghi chú, danh mục chưa có giao diện.

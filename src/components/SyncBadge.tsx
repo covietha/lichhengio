@@ -1,26 +1,33 @@
-import { useEffect, useState } from "react";
 import { usePendingCount } from "../hooks/useData";
+import { signOut } from "../sync/signOut";
+import { useSyncState } from "../sync/syncEngine";
 
-/**
- * Phase 1: chưa có kết nối đám mây, nên KHÔNG BAO GIỜ hiện "Đã đồng bộ".
- * Chỉ nói đúng điều đang xảy ra: dữ liệu nằm trên máy này.
- */
+const clock = (iso: string) => new Date(iso).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+
+/** Chỉ hiện "Đã đồng bộ" khi máy chủ đã xác nhận và không còn thay đổi nào đang chờ. */
 export function SyncBadge() {
   const pending = usePendingCount();
-  const [online, setOnline] = useState(navigator.onLine);
-  useEffect(() => {
-    const on = () => setOnline(true), off = () => setOnline(false);
-    window.addEventListener("online", on); window.addEventListener("offline", off);
-    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
-  }, []);
+  const { phase, lastSyncedAt } = useSyncState();
 
+  let dot = "bg-ok";
+  let text: string;
+  if (phase === "local") { dot = "bg-amber"; text = "Lưu trên máy này. Chưa bật lưu trên hệ thống."; }
+  else if (phase === "offline") { dot = "bg-amber"; text = `Đang offline. Dữ liệu vẫn lưu trên máy này${pending > 0 ? `, ${pending} thay đổi chờ đồng bộ` : ""}.`; }
+  else if (phase === "error") { dot = "bg-margin"; text = "Chưa đồng bộ được, sẽ tự thử lại. Dữ liệu vẫn an toàn trên máy này."; }
+  else if (phase === "syncing" || !lastSyncedAt) { dot = "bg-pen"; text = "Đang đồng bộ..."; }
+  else if (pending > 0) { dot = "bg-pen"; text = `${pending} thay đổi đang chờ đồng bộ.`; }
+  else text = `Đã đồng bộ lúc ${clock(lastSyncedAt)}. Có trên mọi máy bạn đăng nhập.`;
+
+  const cloud = phase !== "local";
   return (
-    <p className="flex items-start gap-2 text-sm text-muted" role="status">
-      <span aria-hidden className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${online ? "bg-ok" : "bg-amber"}`} />
-      <span>
-        {online ? "Đang online" : "Đang offline"}. Lưu trên máy này, chưa cấu hình đồng bộ đám mây
-        {pending > 0 ? `. ${pending} thay đổi đang chờ` : ""}
-      </span>
-    </p>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+      <p className="flex items-start gap-2" role="status">
+        <span aria-hidden className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dot}`} />
+        <span>{text}</span>
+      </p>
+      {cloud && (
+        <button onClick={() => void signOut()} className="min-h-9 font-medium text-pen hover:underline">Đăng xuất</button>
+      )}
+    </div>
   );
 }

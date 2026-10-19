@@ -1,16 +1,22 @@
 /**
- * Phase 1: CHƯA có đăng nhập đám mây. Đây là hồ sơ cục bộ trên máy này,
- * không phải tài khoản. Khi nối Firebase Auth (Phase 3), dữ liệu cục bộ
- * sẽ được gán lại sang uid thật lần đầu đăng nhập.
+ * Một người dùng duy nhất. Mọi máy dùng cùng một mã chủ sở hữu để dữ liệu đồng bộ
+ * khớp nhau; quyền truy cập được bảo vệ bằng đăng nhập (xem /api/login), không phải bằng mã này.
  */
-const USER_KEY = "dang360.localUserId";
+export const OWNER_ID = "owner";
+const OLD_USER_KEY = "dang360.localUserId";
 const DEVICE_KEY = "dang360.deviceId";
 
-function getOrCreate(key: string): string {
-  let v = localStorage.getItem(key);
-  if (!v) { v = crypto.randomUUID(); localStorage.setItem(key, v); }
+export const getLocalUserId = () => OWNER_ID;
+
+export function getDeviceId(): string {
+  let v = localStorage.getItem(DEVICE_KEY);
+  if (!v) { v = crypto.randomUUID(); localStorage.setItem(DEVICE_KEY, v); }
   return v;
 }
 
-export const getLocalUserId = () => getOrCreate(USER_KEY);
-export const getDeviceId = () => getOrCreate(DEVICE_KEY);
+/** Mã người dùng ngẫu nhiên cũ (trước khi có đồng bộ) nếu còn lưu trên máy này. */
+export const getLegacyUserId = (): string | null => {
+  const v = localStorage.getItem(OLD_USER_KEY);
+  return v && v !== OWNER_ID ? v : null;
+};
+export const clearLegacyUserId = () => localStorage.removeItem(OLD_USER_KEY);
